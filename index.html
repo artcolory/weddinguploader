@@ -1,112 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Wedding Photo & Video Uploader</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family:'Raleway',sans-serif;
-      background:#000;
-      color:#fff;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-      margin:0;
-    }
-    .container {
-      text-align:center;
-      max-width:480px;
-      width:90%;
-      padding:40px 30px;
-    }
-    h1 {
-      font-family:'Playfair Display', serif;
-      font-size:2rem;
-      margin-bottom:25px;
-    }
-    input, button {
-      font-size:1rem;
-      margin:5px 0;
-      padding:10px;
-      border-radius:8px;
-      border:none;
-      box-sizing:border-box;
-    }
-    button {
-      cursor:pointer;
-      background:#444;
-      color:#fff;
-      border:2px solid #fff;
-    }
-    button:hover { background:#666; }
-    #preview img,#preview video { max-width:200px; border-radius:12px; margin-top:10px; }
-    #status { margin-top:20px; font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:600; }
-    small { display:block; margin-bottom:10px; color:#ccc; font-size:0.9rem; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wedding Photo & Video Uploader</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body { font-family:'Raleway',sans-serif; background:#000; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
+.container { text-align:center; max-width:480px; width:90%; padding:40px 30px; }
+h1 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:25px; }
+input, button { font-size:1rem; margin:5px 0; padding:10px; border-radius:8px; border:none; box-sizing:border-box; }
+button { cursor:pointer; background:#444; color:#fff; border:2px solid #fff; }
+button:hover { background:#666; }
+#preview img,#preview video { max-width:200px; border-radius:12px; margin-top:10px; }
+#status { margin-top:20px; font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:600; }
+small { display:block; margin-bottom:10px; color:#ccc; font-size:0.9rem; }
 
-    /* Elegant cloud button */
-    .cloud-upload {
-      width:80px;
-      height:80px;
-      border-radius:50%;
-      background:#111; /* charcoal black circle */
-      border:2px solid #555; /* gray outline */
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      cursor:pointer;
-      margin:15px auto;
-      transition:0.3s;
-    }
-    .cloud-upload:hover { background:#333; } /* subtle hover */
-    .cloud-upload svg {
-      width:40px;
-      height:40px;
-      fill:#ccc; /* light gray arrow */
-    }
-    .hidden { display:none; }
+/* Elegant cloud */
+.cloud-upload { width:80px; height:80px; border-radius:50%; background:#111; border:2px solid #555; display:flex; justify-content:center; align-items:center; cursor:pointer; margin:15px auto; transition:0.3s; }
+.cloud-upload:hover { background:#333; }
+.cloud-upload svg { width:40px; height:40px; fill:#ccc; }
+.hidden { display:none; }
 
-    /* Input box styling */
-    #brideId {
-      color:#888; 
-      background:#111; 
-      width:100%; 
-      padding:10px; 
-      border-radius:8px; 
-      border:2px solid #555; 
-    }
-  </style>
+/* Input box */
+#brideId { color:#888; background:#111; width:100%; padding:10px; border-radius:8px; border:2px solid #555; }
+#guestLink { margin-top:25px; font-size:1rem; }
+#guestUrl { margin-top:10px; font-size:1.1rem; color:#ccc; word-break:break-all; }
+</style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Wedding Photo & Video Uploader</h1>
+<h1>Wedding Photo & Video Uploader</h1>
 
-  <!-- Step 1: Create Folder -->
-  <input type="text" id="brideId" placeholder="Enter your names and wedding date (e.g., AliceAndBob_042026)" />
-  <small>Use your first names and wedding date to create a unique folder for your photos/videos.</small>
-  <button id="createFolderBtn">Create Folder</button>
+<!-- Step 1: Create Folder -->
+<input type="text" id="brideId" placeholder="Enter your names and wedding date (e.g., AliceAndBob_042026)" />
+<small>Use your first names and wedding date to create a unique folder for your photos/videos.</small>
+<button id="createFolderBtn">Create Folder</button>
 
-  <!-- Step 2: Upload first photo -->
-  <div id="uploadDiv" class="hidden">
-    <div class="cloud-upload" id="chooseBtn">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M19 18H6a4 4 0 010-8 5.5 5.5 0 0110.9-1A4.5 4.5 0 0119 18zm-7-9l-4 4h3v4h2v-4h3l-4-4z"/>
-      </svg>
-    </div>
-    <input type="file" id="fileInput" accept="image/*,video/*" class="hidden">
-    <button id="uploadBtn" class="hidden">Upload Photo</button>
-    <div id="preview"></div>
+<!-- Step 2: Upload first photo -->
+<div id="uploadDiv" class="hidden">
+  <div class="cloud-upload" id="chooseBtn">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M19 18H6a4 4 0 010-8 5.5 5.5 0 0110.9-1A4.5 4.5 0 0119 18zm-7-9l-4 4h3v4h2v-4h3l-4-4z"/>
+    </svg>
   </div>
+  <input type="file" id="fileInput" accept="image/*,video/*" class="hidden">
+  <button id="uploadBtn" class="hidden">Upload Photo</button>
+  <div id="preview"></div>
+</div>
 
-  <!-- Status & Guest link -->
-  <div id="status"></div>
-  <div id="guestLink" class="hidden">
-    <small>Copy the following website address and link it to your Photo Button in your Canva Website. Guests will use this link to upload photos/videos:</small>
-    <div id="guestUrl" style="color:#ccc;"></div>
-  </div>
+<!-- Status & Guest link -->
+<div id="status"></div>
+<div id="guestLink" class="hidden">
+  <small>Copy the following website address and link it to your Photo Button in your Canva Website:</small>
+  <div id="guestUrl"></div>
+</div>
 </div>
 
 <script>
@@ -126,86 +75,82 @@ const guestUrl = document.getElementById("guestUrl");
 // Step 1: Create Folder or check existence
 createFolderBtn.addEventListener("click", () => {
   const brideId = brideInput.value.trim();
-  if (!brideId) { status.textContent = "Please enter your names and wedding date"; return; }
+  if(!brideId){ status.textContent="Please enter your names and wedding date"; return; }
 
   createFolderBtn.disabled = true;
   createFolderBtn.textContent = "Creating Folder...";
 
-  // Create a small placeholder file to trigger folder creation
   const placeholder = btoa("Folder placeholder");
   fetch(SCRIPT_URL, {
     method:"POST",
-    headers: { "Content-Type":"text/plain;charset=utf-8" },
-    body: JSON.stringify({
+    headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    body:JSON.stringify({
       fileName:"init.txt",
       mimeType:"text/plain",
       base64File:placeholder,
       brideId:brideId
     })
   })
-  .then(res => res.json())
-  .then(data => {
+  .then(res=>res.json())
+  .then(data=>{
     if(data.status==="success" || data.message?.includes("already exists")){
-      status.textContent = `Folder "${brideId}" created! Now upload your first welcome photo using the cloud.`;
+      status.textContent=`Congratulations! Folder "${brideId}" created! Now upload your first welcome photo using the cloud.`;
       uploadDiv.classList.remove("hidden");
-      fileInput.classList.add("hidden");
-      uploadBtn.classList.add("hidden");
-    } else { status.textContent = `Error: ${data.message}`; }
+    } else { status.textContent=`Error: ${data.message}`; }
   })
-  .catch(err => { status.textContent = `Error: ${err}`; })
-  .finally(() => {
-    createFolderBtn.disabled = false;
-    createFolderBtn.textContent = "Create Folder";
+  .catch(err=>{ status.textContent=`Error: ${err}`; })
+  .finally(()=>{
+    createFolderBtn.disabled=false;
+    createFolderBtn.textContent="Create Folder";
   });
 });
 
 // Step 2: Select file
-chooseBtn.addEventListener("click", () => fileInput.click());
-fileInput.addEventListener("change", () => {
-  const file = fileInput.files[0];
+chooseBtn.addEventListener("click",()=>fileInput.click());
+fileInput.addEventListener("change",()=>{
+  const file=fileInput.files[0];
   if(!file){ preview.innerHTML=""; uploadBtn.classList.add("hidden"); return; }
-  const url = URL.createObjectURL(file);
-  preview.innerHTML = file.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" muted autoplay loop></video>`;
+  const url=URL.createObjectURL(file);
+  preview.innerHTML=file.type.startsWith("image/")? `<img src="${url}">`:`<video src="${url}" muted autoplay loop></video>`;
   uploadBtn.classList.remove("hidden");
 });
 
 // Step 3: Upload first photo
-uploadBtn.addEventListener("click", () => {
+uploadBtn.addEventListener("click",()=>{
   const brideId = brideInput.value.trim();
   const file = fileInput.files[0];
-  if(!file){ status.textContent = "Please select a file"; return; }
+  if(!file){ status.textContent="Please select a file"; return; }
 
-  uploadBtn.disabled = true;
-  uploadBtn.textContent = "Uploading...";
+  uploadBtn.disabled=true;
+  uploadBtn.textContent="Uploading...";
 
   const reader = new FileReader();
-  reader.onload = function(e){
-    const base64 = e.target.result.split(",")[1];
-
-    fetch(SCRIPT_URL, {
+  reader.onload=function(e){
+    const base64=e.target.result.split(",")[1];
+    fetch(SCRIPT_URL,{
       method:"POST",
       headers:{ "Content-Type":"text/plain;charset=utf-8" },
-      body: JSON.stringify({
+      body:JSON.stringify({
         fileName:file.name,
         mimeType:file.type,
         base64File:base64,
         brideId:brideId
       })
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(res=>res.json())
+    .then(data=>{
       if(data.status==="success"){
         fileInput.value="";
         preview.innerHTML="";
         uploadBtn.classList.add("hidden");
-        status.textContent = `Congratulations! You have uploaded your photo! In Google Drive, search for your folder name and view your first photo!`;
+        status.textContent=`Congratulations! You have uploaded your photo! In Google Drive, search for your folder name and view your first photo!`;
 
         // Show guest link after first upload
         guestLink.classList.remove("hidden");
-        guestUrl.textContent = window.location.href;
-      } else { status.textContent = `Upload failed: ${data.message}`; }
+        guestUrl.textContent=`https://artcolory.github.io/weddinguploader/guest.html?folder=${brideId}`;
+      } else { status.textContent=`Upload failed: ${data.message}`; }
     })
-    .catch(err => { status.textContent = `Upload failed: ${err}`; })
+    .catch(err=>{ status.textContent=`Upload failed: ${err}`; })
     .finally(()=>{
       uploadBtn.disabled=false;
       uploadBtn.textContent="Upload Photo";
@@ -214,6 +159,5 @@ uploadBtn.addEventListener("click", () => {
   reader.readAsDataURL(file);
 });
 </script>
-
 </body>
 </html>
