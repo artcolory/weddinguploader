@@ -3,96 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Wedding Uploader</title>
 
-  <!-- Elegant Script Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <title>Wedding Upload</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
     body {
-      margin: 0;
-      height: 100vh;
+      font-family: 'Raleway', sans-serif;
+      background-color: #000;
+      color: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: #000;
-      color: #fff;
-      font-family: 'Playfair Display', serif;
+      height: 100vh;
+      margin: 0;
     }
 
     .container {
       text-align: center;
-      max-width: 450px;
+      max-width: 480px;
       width: 90%;
       padding: 40px 30px;
     }
 
     h1 {
+      font-family: 'Playfair Display', serif;
       font-size: 2rem;
       margin-bottom: 25px;
-      font-weight: 700;
+    }
+
+    /* Center the file input */
+    .file-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
     }
 
     input[type="file"] {
-      width: 100%;
+      width: 90%;
       padding: 12px;
-      margin-bottom: 20px;
+      border-radius: 10px;
       border: none;
-      border-radius: 8px;
-      background-color: #111;
+      background: #111;
       color: #fff;
       font-size: 1rem;
+      text-align: center;
     }
 
     button {
-      width: 100%;
-      padding: 14px;
-      background-color: #666;
+      background: #444;
       color: #fff;
-      border: none;
-      border-radius: 8px;
+      border: 2px solid #fff;
+      padding: 14px 32px;
+      border-radius: 12px;
       font-size: 1.1rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    button:disabled {
-      background-color: #444;
-      cursor: not-allowed;
-    }
-
-    button:hover:not(:disabled) {
-      background-color: #555;
-    }
-
-    #status {
+      transition: 0.3s;
       margin-top: 10px;
-      font-size: 1rem;
-      font-weight: 400;
     }
 
-    #preview {
-      margin-top: 15px;
-      max-width: 100%;
-      max-height: 200px;
-      border-radius: 8px;
-      display: none;
-      object-fit: cover;
+    button:hover {
+      background: #666;
+      transform: scale(1.05);
+    }
+
+    /* Make Thank You bigger */
+    #status {
+      margin-top: 25px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;   /* same size as button text */
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Upload Your Photo/Video</h1>
-    <input type="file" id="fileInput" accept="image/*,video/*">
-    <button id="uploadBtn">Upload</button>
-    <div id="status"></div>
-    <div>
-      <img id="preview" alt="Preview">
-      <video id="previewVideo" controls style="max-width:100%; max-height:200px; display:none;"></video>
+    
+    <h1>Upload Your Photo or Video</h1>
+
+    <div class="file-wrapper">
+      <input type="file" id="fileInput" accept="image/*,video/*">
     </div>
+
+    <button id="uploadBtn">Upload</button>
+
+    <div id="status"></div>
+
   </div>
 
   <script>
@@ -101,28 +100,6 @@
     const fileInput = document.getElementById("fileInput");
     const uploadBtn = document.getElementById("uploadBtn");
     const status = document.getElementById("status");
-    const previewImg = document.getElementById("preview");
-    const previewVideo = document.getElementById("previewVideo");
-
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files[0];
-      if (!file) {
-        previewImg.style.display = "none";
-        previewVideo.style.display = "none";
-        return;
-      }
-
-      const url = URL.createObjectURL(file);
-      if (file.type.startsWith("image/")) {
-        previewImg.src = url;
-        previewImg.style.display = "block";
-        previewVideo.style.display = "none";
-      } else if (file.type.startsWith("video/")) {
-        previewVideo.src = url;
-        previewVideo.style.display = "block";
-        previewImg.style.display = "none";
-      }
-    });
 
     uploadBtn.addEventListener("click", () => {
       const file = fileInput.files[0];
@@ -133,7 +110,6 @@
 
       uploadBtn.disabled = true;
       uploadBtn.textContent = "Uploading...";
-      status.textContent = "";
 
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -153,8 +129,6 @@
           if (data.status === "success") {
             fileInput.value = "";
             status.textContent = "Thank you!";
-            previewImg.style.display = "none";
-            previewVideo.style.display = "none";
           } else {
             status.textContent = `Upload failed: ${data.message}`;
           }
