@@ -53,13 +53,13 @@ small { display:block; margin-bottom:10px; color:#ccc; font-size:0.9rem; }
 <!-- Status & Guest link -->
 <div id="status"></div>
 <div id="guestLink" class="hidden">
-  <small>Copy the following website address and link it to your Photo Button in your Canva Website. Guests will use this link to upload photos/videos:</small>
+  <small>Copy the following website address and link it to your Photo Button in your Canva Website:</small>
   <div id="guestUrl"></div>
 </div>
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuv_-YOZiDI2BI38fzVjckt5BtCK3rDE5TH-FiUsIPL9ek_xSwDTzfG8QCPzCbtIY6PA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIPyYEUexXZ1sdoePjhO3sc-C7d6PTo2i72e8bxIhiZ3pP7uCT4cUwqGHOTtTBlSYhFA/exec";
 
 const brideInput = document.getElementById("brideId");
 const createFolderBtn = document.getElementById("createFolderBtn");
@@ -72,7 +72,7 @@ const status = document.getElementById("status");
 const guestLink = document.getElementById("guestLink");
 const guestUrl = document.getElementById("guestUrl");
 
-// Step 1: Create Folder or check uniqueness
+// Step 1: Create Folder
 createFolderBtn.addEventListener("click", () => {
   const brideId = brideInput.value.trim();
   if(!brideId){ status.textContent="Please enter your names and wedding date"; return; }
@@ -80,28 +80,21 @@ createFolderBtn.addEventListener("click", () => {
   createFolderBtn.disabled = true;
   createFolderBtn.textContent = "Creating Folder...";
 
-  const placeholder = btoa("Folder placeholder");
   fetch(SCRIPT_URL, {
     method:"POST",
     headers:{ "Content-Type":"text/plain;charset=utf-8" },
-    body:JSON.stringify({
-      mode:"create",
-      fileName:"init.txt",
-      mimeType:"text/plain",
-      base64File:placeholder,
-      brideId:brideId
-    })
+    body:JSON.stringify({ brideId: brideId })
   })
-  .then(res=>res.json())
-  .then(data=>{
-    if(data.status==="success"){
+  .then(res => res.json())
+  .then(data => {
+    if(data.status === "success"){
       status.textContent=`Congratulations! Folder "${brideId}" created! Now upload your first welcome photo using the cloud.`;
       uploadDiv.classList.remove("hidden");
-    } else if(data.message==="exists"){
-      status.textContent=`Folder name taken. Please choose a different unique ID.`;
-    } else { status.textContent=`Error: ${data.message}`; }
+    } else {
+      status.textContent=`Error: ${data.message}`;
+    }
   })
-  .catch(err=>{ status.textContent=`Error: ${err}`; })
+  .catch(err => { status.textContent=`Error: ${err}`; })
   .finally(()=>{
     createFolderBtn.disabled=false;
     createFolderBtn.textContent="Create Folder";
@@ -110,51 +103,48 @@ createFolderBtn.addEventListener("click", () => {
 
 // Step 2: Select file
 chooseBtn.addEventListener("click",()=>fileInput.click());
-fileInput.addEventListener("change",()=>{
-  const file=fileInput.files[0];
+fileInput.addEventListener("change",()=> {
+  const file = fileInput.files[0];
   if(!file){ preview.innerHTML=""; uploadBtn.classList.add("hidden"); return; }
-  const url=URL.createObjectURL(file);
-  preview.innerHTML=file.type.startsWith("image/")? `<img src="${url}">`:`<video src="${url}" muted autoplay loop></video>`;
+  const url = URL.createObjectURL(file);
+  preview.innerHTML = file.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" muted autoplay loop></video>`;
   uploadBtn.classList.remove("hidden");
 });
 
 // Step 3: Upload first photo
-uploadBtn.addEventListener("click",()=>{
+uploadBtn.addEventListener("click", () => {
   const brideId = brideInput.value.trim();
   const file = fileInput.files[0];
   if(!file){ status.textContent="Please select a file"; return; }
 
-  uploadBtn.disabled=true;
-  uploadBtn.textContent="Uploading...";
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = "Uploading...";
 
   const reader = new FileReader();
-  reader.onload=function(e){
-    const base64=e.target.result.split(",")[1];
-    fetch(SCRIPT_URL,{
+  reader.onload = function(e){
+    const base64 = e.target.result.split(",")[1];
+    fetch(SCRIPT_URL, {
       method:"POST",
       headers:{ "Content-Type":"text/plain;charset=utf-8" },
       body:JSON.stringify({
-        mode:"upload",
-        fileName:file.name,
-        mimeType:file.type,
-        base64File:base64,
-        brideId:brideId
+        brideId: brideId,
+        fileName: file.name,
+        mimeType: file.type,
+        base64File: base64
       })
     })
-    .then(res=>res.json())
-    .then(data=>{
-      if(data.status==="success"){
+    .then(res => res.json())
+    .then(data => {
+      if(data.status === "success"){
         fileInput.value="";
         preview.innerHTML="";
         uploadBtn.classList.add("hidden");
         status.textContent=`Congratulations! You have uploaded your photo! In Google Drive, search for your folder name and view your first photo!`;
-
-        // Show guest link after first upload
         guestLink.classList.remove("hidden");
         guestUrl.textContent=`https://artcolory.github.io/weddinguploader/guest.html?folder=${brideId}`;
       } else { status.textContent=`Upload failed: ${data.message}`; }
     })
-    .catch(err=>{ status.textContent=`Upload failed: ${err}`; })
+    .catch(err => { status.textContent=`Upload failed: ${err}`; })
     .finally(()=>{
       uploadBtn.disabled=false;
       uploadBtn.textContent="Upload Photo";
