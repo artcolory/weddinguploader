@@ -220,7 +220,7 @@ setupUploadBtn.addEventListener("click", ()=>{
       if(data.status==="success"){
         fileInput.value="";
         preview.innerHTML = file.type.startsWith("image/") ? `<img src="${URL.createObjectURL(file)}">` : `<video src="${URL.createObjectURL(file)}" muted autoplay loop></video>`;
-        status.textContent="Congratulations! You have uploaded your photo! Please go to Google Drive, paste your unique folder name it in the search bar, opne your folder and you should see your first photo!";
+        status.textContent="Congratulations! You have uploaded your photo! In Google Drive, search for your folder name and view your first photo!";
         setupUploadBtn.style.display="none";
       } else {
         status.textContent=`Upload failed: ${data.message}`;
