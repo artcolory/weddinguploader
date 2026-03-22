@@ -103,7 +103,7 @@ createFolderBtn.addEventListener("click", ()=>{
   .then(res=>res.json())
   .then(data=>{
     if(data.status==="success"){
-      status.textContent = `Folder "${brideId}" created! Go to Google Drive and copy the link to share with guests.`;
+      status.textContent = `Folder "${brideId}" created! This is your own Google Drive Folder where all your uploaded photos and videos will appear.`;
     } else {
       status.textContent = `Failed to create folder: ${data.message}`;
     }
