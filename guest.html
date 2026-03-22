@@ -8,53 +8,76 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family:'Raleway',sans-serif; background:#000; color:#fff; padding:30px; text-align:center; }
-    h1 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:20px; }
+    body {
+      font-family:'Raleway',sans-serif;
+      background:#000;
+      color:#fff;
+      padding:30px;
+      text-align:center;
+    }
 
+    h1 {
+      font-family:'Playfair Display',serif;
+      font-size:2rem;
+      margin-bottom:20px;
+    }
+
+    /* Cloud upload button */
     .cloud-upload {
-      width:120px; height:120px; border-radius:50%; 
-      background:rgba(255,255,255,0.08);
-      border:2px solid rgba(255,255,255,0.25);
-      display:flex; justify-content:center; align-items:center;
-      margin:0 auto 20px auto; cursor:pointer;
-      transition:0.3s;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.25);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 30px auto;  /* space below cloud */
+      cursor: pointer;
+      transition: 0.3s;
     }
 
     .cloud-upload:hover {
-      background:rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.18);
     }
 
     .cloud-upload svg {
-      width:60px; fill:#ccc;
+      width: 60px;
+      fill: #ccc;
     }
 
     #guestFileInput { display:none; }
 
+    /* Upload button */
     button {
-      margin-top:20px;
-      padding:12px 22px;
-      background:#222;
-      color:#fff;
-      border:2px solid #fff;
-      border-radius:8px;
-      font-size:1rem;
-      cursor:pointer;
-      transition:0.3s;
+      margin-top: 20px;
+      padding: 14px 28px;
+      background: #222;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: 0.3s;
     }
 
     button:hover {
-      background:#444;
+      background: #444;
     }
 
+    /* Preview photo/video */
     #guestPreview img,
     #guestPreview video {
-      max-width:240px;
+      max-width: 240px;
+      margin-top: 30px;
+      border-radius: 12px;
     }
 
+    /* Status message */
     #guestStatus {
-      margin-top:25px;
-      font-family:'Playfair Display',serif;
-      font-size:1.1rem;
+      margin-top: 40px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
     }
   </style>
 </head>
@@ -76,72 +99,72 @@
   <div id="guestStatus"></div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIWQetNX-Fhpr-sG_1hDUFHZo1_6GHYXHK-QZ6Qu21QtUGEtIxV5gyWQP2CYzIBKJKQA/exec";  // <-- LEAVE your existing one
-const urlParams = new URLSearchParams(window.location.search);
-const brideFolder = urlParams.get("folder");
+  // --- Add your deployed Google Script Web App URL here ---
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIWQetNX-Fhpr-sG_1hDUFHZo1_6GHYXHK-QZ6Qu21QtUGEtIxV5gyWQP2CYzIBKJKQA/exec";
 
-const guestChooseBtn = document.getElementById("guestChooseBtn");
-const guestFileInput = document.getElementById("guestFileInput");
-const guestUploadBtn = document.getElementById("guestUploadBtn");
-const guestPreview = document.getElementById("guestPreview");
-const guestStatus = document.getElementById("guestStatus");
+  // Get the folder from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const brideFolder = urlParams.get("folder");
 
+  const guestChooseBtn = document.getElementById("guestChooseBtn");
+  const guestFileInput = document.getElementById("guestFileInput");
+  const guestUploadBtn = document.getElementById("guestUploadBtn");
+  const guestPreview = document.getElementById("guestPreview");
+  const guestStatus = document.getElementById("guestStatus");
 
-// pick file
-guestChooseBtn.addEventListener("click", () => guestFileInput.click());
+  // Open file picker
+  guestChooseBtn.addEventListener("click", () => guestFileInput.click());
 
-// preview
-guestFileInput.addEventListener("change", () => {
-  const f = guestFileInput.files[0];
-  if (!f) return (guestPreview.innerHTML = "");
+  // Preview selected file
+  guestFileInput.addEventListener("change", () => {
+    const f = guestFileInput.files[0];
+    if (!f) return guestPreview.innerHTML = "";
+    const url = URL.createObjectURL(f);
+    guestPreview.innerHTML =
+      f.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" autoplay muted loop></video>`;
+  });
 
-  const url = URL.createObjectURL(f);
-  guestPreview.innerHTML =
-    f.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" autoplay muted loop></video>`;
-});
+  // Upload file
+  guestUploadBtn.addEventListener("click", () => {
+    const file = guestFileInput.files[0];
+    if (!file) return guestStatus.textContent = "Please select a file.";
 
+    guestUploadBtn.disabled = true;
+    guestUploadBtn.textContent = "Uploading...";
 
-// upload
-guestUploadBtn.addEventListener("click", () => {
-  const file = guestFileInput.files[0];
-  if (!file) return guestStatus.textContent = "Please select a file.";
+    const reader = new FileReader();
+    reader.onload = e => {
+      const base64 = e.target.result.split(",")[1];
 
-  guestUploadBtn.disabled = true;
-  guestUploadBtn.textContent = "Uploading...";
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    const base64 = e.target.result.split(",")[1];
-
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        fileName: file.name,
-        mimeType: file.type,
-        base64File: base64,
-        brideId: brideFolder
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          fileName: file.name,
+          mimeType: file.type,
+          base64File: base64,
+          brideId: brideFolder
+        })
       })
-    })
-    .then(r => r.json())
-    .then(d => {
-      if (d.status === "success") {
-        guestStatus.textContent = "Thank you! Your upload was successful.";
-        guestPreview.innerHTML = "";
-        guestFileInput.value = "";
-      } else {
-        guestStatus.textContent = "Upload failed: " + d.message;
-      }
-    })
-    .catch(err => guestStatus.textContent = "Upload failed: " + err)
-    .finally(() => {
-      guestUploadBtn.disabled = false;
-      guestUploadBtn.textContent = "Upload";
-    });
-  };
+      .then(r => r.json())
+      .then(d => {
+        if (d.status === "success") {
+          guestStatus.textContent = "Thank you! Your upload was successful.";
+          guestPreview.innerHTML = "";
+          guestFileInput.value = "";
+        } else {
+          guestStatus.textContent = "Upload failed: " + d.message;
+        }
+      })
+      .catch(err => guestStatus.textContent = "Upload failed: " + err)
+      .finally(() => {
+        guestUploadBtn.disabled = false;
+        guestUploadBtn.textContent = "Upload";
+      });
+    };
 
-  reader.readAsDataURL(file);
-});
+    reader.readAsDataURL(file);
+  });
 </script>
 
 </body>
