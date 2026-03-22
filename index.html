@@ -178,7 +178,7 @@ createFolderBtn.addEventListener("click", ()=>{
   if(fileInput.files[0]){
     setupUploadBtn.style.display="inline-block";
   } else {
-    status.textContent = `Folder "${brideId}" created! Upload your first welcome photo using the cloud below.`;
+    status.textContent = `Folder "${brideId}" created! This is your Google Drive Folder name. Upload your first welcome photo using the cloud.`;
   }
 
   createFolderBtn.disabled=false;
@@ -226,7 +226,7 @@ setupUploadBtn.addEventListener("click", ()=>{
       if(data.status==="success"){
         fileInput.value="";
         preview.innerHTML = file.type.startsWith("image/") ? `<img src="${URL.createObjectURL(file)}">` : `<video src="${URL.createObjectURL(file)}" muted autoplay loop></video>`;
-        status.textContent="Congratulations! You have uploaded your photo!";
+        status.textContent="Congratulations! You have uploaded your photo! Head over to Google Drive, find your folder by using your unique folder name to view your first photo!";
         setupUploadBtn.style.display="none";
       } else {
         status.textContent=`Upload failed: ${data.message}`;
