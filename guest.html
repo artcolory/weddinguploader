@@ -8,23 +8,15 @@
 <style>
 body { font-family:'Raleway',sans-serif; background:#000; color:#fff; padding:30px; text-align:center; }
 h1 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:20px; }
-
-/* Cloud upload button */
-.cloud-upload { width:110px; height:110px; border-radius:50%; background:rgba(255,255,255,0.08); border:2px solid rgba(255,255,255,0.25); display:flex; justify-content:center; align-items:center; margin:0 auto 30px auto; cursor:pointer; transition:0.3s; }
+.cloud-upload { width:110px; height:110px; border-radius:50%; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.25); display:flex; justify-content:center; align-items:center; margin: 0 auto 30px auto; cursor:pointer; transition:0.3s; }
 .cloud-upload:hover { background: rgba(255,255,255,0.18); }
 .cloud-upload svg { width:60px; fill:#ccc; }
 #guestFileInput { display:none; }
-
-/* Upload button */
 #guestUploadBtn { margin-top:30px; padding:14px 28px; background:#222; color:#fff; border:2px solid #fff; border-radius:12px; font-size:1.1rem; cursor:pointer; transition:0.3s; }
 #guestUploadBtn:hover { background:#444; }
-
-/* Preview */
 #guestPreview { margin-top:40px; }
 #guestPreview img,#guestPreview video { max-width:240px; border-radius:12px; }
-
-/* Status */
-#guestStatus { margin-top:50px; font-family:'Playfair Display',serif; font-size:1.15rem; }
+#guestStatus { margin-top:50px; font-family: 'Playfair Display', serif; font-size:1.15rem; }
 </style>
 </head>
 <body>
@@ -36,7 +28,6 @@ h1 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:20px; }
     <path d="M19 18H6a4 4 0 010-8 5.5 5.5 0 0110.9-1A4.5 4.5 0 0119 18zm-7-9l-4 4h3v4h2v-4h3l-4-4z"/>
   </svg>
 </div>
-
 <input type="file" id="guestFileInput" accept="image/*,video/*">
 <button id="guestUploadBtn">Upload</button>
 
@@ -44,9 +35,8 @@ h1 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:20px; }
 <div id="guestStatus"></div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuv_-YOZiDI2BI38fzVjckt5BtCK3rDE5TH-FiUsIPL9ek_xSwDTzfG8QCPzCbtIY6PA/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzIPyYEUexXZ1sdoePjhO3sc-C7d6PTo2i72e8bxIhiZ3pP7uCT4cUwqGHOTtTBlSYhFA/exec";
 
-// Folder from URL
 const urlParams = new URLSearchParams(window.location.search);
 const brideFolder = urlParams.get("folder");
 
@@ -56,57 +46,49 @@ const guestUploadBtn = document.getElementById("guestUploadBtn");
 const guestPreview = document.getElementById("guestPreview");
 const guestStatus = document.getElementById("guestStatus");
 
-// Open file picker
-guestChooseBtn.addEventListener("click", () => guestFileInput.click());
-
-// Preview selected file
-guestFileInput.addEventListener("change", () => {
+guestChooseBtn.addEventListener("click", ()=>guestFileInput.click());
+guestFileInput.addEventListener("change", ()=>{
   const f = guestFileInput.files[0];
-  if(!f) return guestPreview.innerHTML = "";
+  if(!f) return guestPreview.innerHTML="";
   const url = URL.createObjectURL(f);
   guestPreview.innerHTML = f.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" autoplay muted loop></video>`;
 });
 
-// Upload file
-guestUploadBtn.addEventListener("click", () => {
+guestUploadBtn.addEventListener("click", ()=>{
   const file = guestFileInput.files[0];
-  if(!file) return guestStatus.textContent = "Please select a file.";
+  if(!file) return guestStatus.textContent="Please select a file.";
+  if(!brideFolder) return guestStatus.textContent="Folder ID missing.";
 
-  guestUploadBtn.disabled = true;
-  guestUploadBtn.textContent = "Uploading...";
+  guestUploadBtn.disabled=true;
+  guestUploadBtn.textContent="Uploading...";
 
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = e=>{
     const base64 = e.target.result.split(",")[1];
-
     fetch(SCRIPT_URL, {
       method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify({
-        mode:"upload",
-        fileName:file.name,
-        mimeType:file.type,
-        base64File:base64,
-        brideId:brideFolder
+      headers: { "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        brideId: brideFolder,
+        fileName: file.name,
+        mimeType: file.type,
+        base64File: base64
       })
     })
-    .then(r => r.json())
-    .then(d => {
+    .then(r=>r.json())
+    .then(d=>{
       if(d.status==="success"){
-        guestStatus.textContent = "Thank you! Your upload was successful.";
-        guestPreview.innerHTML = "";
-        guestFileInput.value = "";
-      } else {
-        guestStatus.textContent = "Upload failed: " + d.message;
-      }
+        guestStatus.textContent="Thank you! Your upload was successful.";
+        guestPreview.innerHTML="";
+        guestFileInput.value="";
+      } else { guestStatus.textContent="Upload failed: "+d.message; }
     })
-    .catch(err => guestStatus.textContent = "Upload failed: " + err)
+    .catch(err=>guestStatus.textContent="Upload failed: "+err)
     .finally(()=>{
       guestUploadBtn.disabled=false;
       guestUploadBtn.textContent="Upload";
     });
   };
-
   reader.readAsDataURL(file);
 });
 </script>
