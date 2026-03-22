@@ -49,8 +49,8 @@
     #guestFileInput { display:none; }
 
     /* Upload button */
-    button {
-      margin-top: 20px;
+    #guestUploadBtn {
+      margin-top: 30px; /* space above button */
       padding: 14px 28px;
       background: #222;
       color: #fff;
@@ -61,21 +61,24 @@
       transition: 0.3s;
     }
 
-    button:hover {
+    #guestUploadBtn:hover {
       background: #444;
     }
 
     /* Preview photo/video */
+    #guestPreview {
+      margin-top: 40px; /* space between button and preview */
+    }
+
     #guestPreview img,
     #guestPreview video {
       max-width: 240px;
-      margin-top: 30px;
       border-radius: 12px;
     }
 
     /* Status message */
     #guestStatus {
-      margin-top: 40px;
+      margin-top: 50px; /* space between preview and message */
       font-family: 'Playfair Display', serif;
       font-size: 1.15rem;
     }
