@@ -37,9 +37,7 @@ input[type="text"] {
   color:#bbb;
   width:90%;
 }
-input[type="file"] {
-  display:none;
-}
+input[type="file"] { display:none; }
 button {
   background:#444;
   color:#fff;
@@ -52,10 +50,7 @@ button {
   transition:0.3s;
   margin-top:20px;
 }
-button:hover {
-  background:#666;
-  transform:scale(1.05);
-}
+button:hover { background:#666; transform:scale(1.05); }
 #status, #guestStatus, #setupLink {
   margin-top:25px;
   font-family:'Playfair Display', serif;
@@ -82,15 +77,8 @@ small {
   border:2px solid #555;
   transition:0.3s;
 }
-.cloud-upload:hover {
-  background:#2a2a2a;
-  transform:scale(1.05);
-}
-.cloud-upload svg {
-  width:55px;
-  height:55px;
-  fill:#bbb;
-}
+.cloud-upload:hover { background:#2a2a2a; transform:scale(1.05); }
+.cloud-upload svg { width:55px; height:55px; fill:#bbb; }
 #preview img, #preview video,
 #guestPreview img, #guestPreview video {
   max-width:200px;
@@ -179,12 +167,7 @@ createFolderBtn.addEventListener("click", ()=>{
 
   createFolderBtn.disabled=true;
   createFolderBtn.textContent="Creating...";
-  status.textContent=`Folder "${brideId}" created in Google Drive! Upload your first welcome photo using the cloud.`;
-
-  // Show guest uploader link for Canva
-  const guestURL = `${window.location.origin}/weddinguploader/?folder=${brideId}`;
-  setupLink.textContent = `Copy this website address and link it to your Photo Button in your Canva Website. This is the link your guests will use to upload photos and videos: ${guestURL}`;
-
+  status.textContent=`Folder "${brideId}" created! Upload your first welcome photo using the cloud below.`;
   createFolderBtn.disabled=false;
   createFolderBtn.textContent="Create Folder";
 });
@@ -229,6 +212,11 @@ setupUploadBtn.addEventListener("click", ()=>{
         preview.innerHTML = file.type.startsWith("image/") ? `<img src="${URL.createObjectURL(file)}">` : `<video src="${URL.createObjectURL(file)}" muted autoplay loop></video>`;
         status.textContent="Congratulations! You have uploaded your photo! In Google Drive, search for your folder name and view your first photo!";
         setupUploadBtn.style.display="none";
+
+        // --- SHOW GUEST LINK AFTER FIRST PHOTO UPLOAD ---
+        const guestURL = `${window.location.origin}/weddinguploader/?folder=${brideId}`;
+        setupLink.textContent = `Copy this website address and link it to your Photo Button in your Canva Website. This is the link your guests will use to upload photos and videos: ${guestURL}`;
+        setupLink.style.display="block";
       } else {
         status.textContent=`Upload failed: ${data.message}`;
       }
