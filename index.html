@@ -37,6 +37,9 @@ input[type="text"] {
   color:#bbb;
   width:90%;
 }
+input[type="file"] {
+  display:none; /* hides "No file chosen" */
+}
 button {
   background:#444;
   color:#fff;
@@ -56,7 +59,7 @@ button:hover {
 #status {
   margin-top:25px;
   font-family:'Playfair Display', serif;
-  font-size:1.3rem;
+  font-size:1.2rem;
   font-weight:600;
 }
 small {
@@ -88,7 +91,8 @@ small {
   height:55px;
   fill:#bbb;
 }
-#preview img, #preview video {
+#preview img, #preview video,
+#guestPreview img, #guestPreview video {
   max-width:200px;
   border-radius:12px;
   margin-top:10px;
@@ -124,7 +128,7 @@ small {
         <path d="M19 18H6a4 4 0 010-8 5.5 5.5 0 0110.9-1A4.5 4.5 0 0119 18zm-7-9l-4 4h3v4h2v-4h3l-4-4z"/>
       </svg>
     </div>
-    <input type="file" id="guestFileInput" accept="image/*,video/*" style="display:none;">
+    <input type="file" id="guestFileInput" accept="image/*,video/*">
     <div id="guestPreview"></div>
     <button id="guestUploadBtn">Upload</button>
     <div id="guestStatus"></div>
@@ -135,9 +139,11 @@ small {
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby22tI-7iO5Qb78tegrBWOm0BiOO2y6C_FsC6v1qWgc6eZVDItJPd23yVwTA8It-ZS2KQ/exec";
 
+// Setup & guest divs
 const setupDiv = document.getElementById("setupDiv");
 const guestDiv = document.getElementById("guestDiv");
 
+// Setup elements
 const brideInput = document.getElementById("brideId");
 const createFolderBtn = document.getElementById("createFolderBtn");
 const chooseBtn = document.getElementById("chooseBtn");
@@ -145,20 +151,21 @@ const fileInput = document.getElementById("fileInput");
 const preview = document.getElementById("preview");
 const status = document.getElementById("status");
 
+// Guest elements
 const guestChooseBtn = document.getElementById("guestChooseBtn");
 const guestFileInput = document.getElementById("guestFileInput");
 const guestUploadBtn = document.getElementById("guestUploadBtn");
 const guestPreview = document.getElementById("guestPreview");
 const guestStatus = document.getElementById("guestStatus");
 
-// Check if setup mode
+// Check for setup mode
 const urlParams = new URLSearchParams(window.location.search);
 const setupMode = urlParams.get('setup') === 'true';
 
 setupDiv.style.display = setupMode ? 'block' : 'none';
 guestDiv.style.display = setupMode ? 'none' : 'block';
 
-// --- Setup mode logic ---
+// --- Setup Mode Logic ---
 createFolderBtn.addEventListener("click", ()=>{
   const brideId = brideInput.value.trim();
   if(!brideId){ status.textContent="Please enter your names and wedding date"; return; }
@@ -166,48 +173,50 @@ createFolderBtn.addEventListener("click", ()=>{
   createFolderBtn.disabled = true;
   createFolderBtn.textContent = "Creating...";
 
-  // If file selected, upload first photo at the same time
   const file = fileInput.files[0];
-  if(!file){
-    status.textContent = "Folder created! Now upload your first welcome photo using the cloud below.";
-    createFolderBtn.disabled = false;
-    createFolderBtn.textContent = "Create Folder";
-    return;
-  }
 
-  const reader = new FileReader();
-  reader.onload = function(e){
-    const base64 = e.target.result.split(",")[1];
-
-    fetch(SCRIPT_URL,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify({
-        fileName: file.name,
-        mimeType: file.type,
-        base64File: base64,
-        brideId: brideId
-      })
-    })
-    .then(res=>res.json())
-    .then(data=>{
-      if(data.status==="success"){
-        status.textContent = `Congratulations! Folder "${brideId}" created! This is your own Google Drive Folder where all your uploaded photos and videos will appear. First photo uploaded!`;
-        preview.innerHTML = file.type.startsWith("image/") ? `<img src="${URL.createObjectURL(file)}">` : `<video src="${URL.createObjectURL(file)}" muted autoplay loop></video>`;
-        fileInput.value = "";
-      } else {
-        status.textContent = `Failed: ${data.message}`;
-      }
-    })
-    .catch(err=>{
-      status.textContent = `Failed: ${err}`;
-    })
-    .finally(()=>{
+  const uploadFile = ()=>{
+    if(file){
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const base64 = e.target.result.split(",")[1];
+        fetch(SCRIPT_URL,{
+          method:"POST",
+          headers:{"Content-Type":"text/plain;charset=utf-8"},
+          body: JSON.stringify({
+            fileName:file.name,
+            mimeType:file.type,
+            base64File:base64,
+            brideId:brideId
+          })
+        })
+        .then(res=>res.json())
+        .then(data=>{
+          if(data.status==="success"){
+            preview.innerHTML = file.type.startsWith("image/") ? `<img src="${URL.createObjectURL(file)}">` : `<video src="${URL.createObjectURL(file)}" muted autoplay loop></video>`;
+            fileInput.value="";
+            status.textContent = `Congratulations! Folder "${brideId}" created! This is your own Google Drive Folder where all your uploaded photos and videos will appear. First photo uploaded! Copy your folder name into Google Drive to locate your folder.`;
+          } else {
+            status.textContent = `Failed: ${data.message}`;
+          }
+        })
+        .catch(err=>{
+          status.textContent = `Failed: ${err}`;
+        })
+        .finally(()=>{
+          createFolderBtn.disabled = false;
+          createFolderBtn.textContent = "Create Folder";
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      status.textContent = `Congratulations! Folder "${brideId}" created! This is your own Google Drive Folder where all your uploaded photos and videos will appear. Now upload your first photo using the cloud below.`;
       createFolderBtn.disabled = false;
       createFolderBtn.textContent = "Create Folder";
-    });
+    }
   };
-  if(file) reader.readAsDataURL(file);
+
+  uploadFile();
 });
 
 // --- Setup cloud click ---
@@ -229,11 +238,11 @@ guestFileInput.addEventListener("change", ()=>{
 });
 
 guestUploadBtn.addEventListener("click", ()=>{
-  const brideId = "guest"; // set your logic for guest folder here if needed
+  const brideId = "guest"; // or set your logic to map guests to folder
   const file = guestFileInput.files[0];
   if(!file){ guestStatus.textContent="Please select a file"; return; }
 
-  guestUploadBtn.disabled = true;
+  guestUploadBtn.disabled=true;
   guestUploadBtn.textContent="Uploading...";
 
   const reader = new FileReader();
