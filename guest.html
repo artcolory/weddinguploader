@@ -4,21 +4,65 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guest Photo/Video Upload</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
-body { font-family:'Raleway',sans-serif; background:#000; color:#fff; padding:30px; text-align:center; }
-h1 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:20px; }
-.cloud-upload { width:110px; height:110px; border-radius:50%; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.25); display:flex; justify-content:center; align-items:center; margin: 0 auto 30px auto; cursor:pointer; transition:0.3s; }
+body {
+  font-family:'Raleway',sans-serif;
+  background:#000;
+  color:#fff;
+  padding:30px;
+  text-align:center;
+}
+h1 {
+  font-family:'Playfair Display',serif;
+  font-size:2rem;
+  margin-bottom:20px;
+}
+
+/* Cloud upload button */
+.cloud-upload {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,255,255,0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 30px auto;
+  cursor: pointer;
+  transition: 0.3s;
+}
 .cloud-upload:hover { background: rgba(255,255,255,0.18); }
-.cloud-upload svg { width:60px; fill:#ccc; }
+.cloud-upload svg { width: 60px; fill: #ccc; }
+
 #guestFileInput { display:none; }
-#guestUploadBtn { margin-top:30px; padding:14px 28px; background:#222; color:#fff; border:2px solid #fff; border-radius:12px; font-size:1.1rem; cursor:pointer; transition:0.3s; }
-#guestUploadBtn:hover { background:#444; }
-#guestPreview { margin-top:40px; }
-#guestPreview img,#guestPreview video { max-width:240px; border-radius:12px; }
-#guestStatus { margin-top:50px; font-family: 'Playfair Display', serif; font-size:1.15rem; }
+
+/* Upload button */
+#guestUploadBtn {
+  margin-top: 30px;
+  padding: 14px 28px;
+  background: #222;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+#guestUploadBtn:hover { background: #444; }
+
+/* Preview photo/video */
+#guestPreview { margin-top: 40px; }
+#guestPreview img, #guestPreview video { max-width: 240px; border-radius: 12px; }
+
+/* Status message */
+#guestStatus { margin-top: 50px; font-family: 'Playfair Display', serif; font-size: 1.15rem; }
 </style>
 </head>
+
 <body>
 
 <h1>Upload Your Photo or Video</h1>
@@ -28,6 +72,7 @@ h1 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:20px; }
     <path d="M19 18H6a4 4 0 010-8 5.5 5.5 0 0110.9-1A4.5 4.5 0 0119 18zm-7-9l-4 4h3v4h2v-4h3l-4-4z"/>
   </svg>
 </div>
+
 <input type="file" id="guestFileInput" accept="image/*,video/*">
 <button id="guestUploadBtn">Upload</button>
 
@@ -35,8 +80,9 @@ h1 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:20px; }
 <div id="guestStatus"></div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-JfaA-Ro7VQvst-F2xS5H-DPYvWd2spG0dUYQQMAtcXTGhdMT8mUPZcbrdhvd6SuQvw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkWXLO6g5iN9pxttoi4c4y91gSNGUZdo7ZhhNSThmCzrkPMZzWSN0YU50GIan5pdm50A/exec";
 
+// Get folder from URL query
 const urlParams = new URLSearchParams(window.location.search);
 const brideFolder = urlParams.get("folder");
 
@@ -46,47 +92,54 @@ const guestUploadBtn = document.getElementById("guestUploadBtn");
 const guestPreview = document.getElementById("guestPreview");
 const guestStatus = document.getElementById("guestStatus");
 
-guestChooseBtn.addEventListener("click", ()=>guestFileInput.click());
-guestFileInput.addEventListener("change", ()=>{
+// Open file picker
+guestChooseBtn.addEventListener("click", () => guestFileInput.click());
+
+// Preview selected file
+guestFileInput.addEventListener("change", () => {
   const f = guestFileInput.files[0];
-  if(!f) return guestPreview.innerHTML="";
+  if(!f) return guestPreview.innerHTML = "";
   const url = URL.createObjectURL(f);
   guestPreview.innerHTML = f.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" autoplay muted loop></video>`;
 });
 
-guestUploadBtn.addEventListener("click", ()=>{
+// Upload file
+guestUploadBtn.addEventListener("click", () => {
   const file = guestFileInput.files[0];
-  if(!file) return guestStatus.textContent="Please select a file.";
-  if(!brideFolder) return guestStatus.textContent="Folder ID missing.";
+  if(!file){ guestStatus.textContent = "Please select a file."; return; }
+  if(!brideFolder){ guestStatus.textContent = "Invalid folder link."; return; }
 
-  guestUploadBtn.disabled=true;
-  guestUploadBtn.textContent="Uploading...";
+  guestUploadBtn.disabled = true;
+  guestUploadBtn.textContent = "Uploading...";
 
   const reader = new FileReader();
-  reader.onload = e=>{
+  reader.onload = e => {
     const base64 = e.target.result.split(",")[1];
+
     fetch(SCRIPT_URL, {
-      method:"POST",
-      headers: { "Content-Type":"text/plain;charset=utf-8" },
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
-        brideId: brideFolder,
         fileName: file.name,
         mimeType: file.type,
-        base64File: base64
+        base64File: base64,
+        brideId: brideFolder
       })
     })
-    .then(r=>r.json())
-    .then(d=>{
-      if(d.status==="success"){
-        guestStatus.textContent="Thank you! Your upload was successful.";
-        guestPreview.innerHTML="";
-        guestFileInput.value="";
-      } else { guestStatus.textContent="Upload failed: "+d.message; }
+    .then(r => r.json())
+    .then(d => {
+      if(d.status === "success"){
+        guestStatus.textContent = "Thank you! Your upload was successful.";
+        guestPreview.innerHTML = "";
+        guestFileInput.value = "";
+      } else {
+        guestStatus.textContent = "Upload failed: " + d.message;
+      }
     })
-    .catch(err=>guestStatus.textContent="Upload failed: "+err)
+    .catch(err => guestStatus.textContent = "Upload failed: " + err)
     .finally(()=>{
-      guestUploadBtn.disabled=false;
-      guestUploadBtn.textContent="Upload";
+      guestUploadBtn.disabled = false;
+      guestUploadBtn.textContent = "Upload";
     });
   };
   reader.readAsDataURL(file);
