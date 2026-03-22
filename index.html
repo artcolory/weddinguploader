@@ -35,13 +35,16 @@
 
     /* Center the file input */
     .file-wrapper {
+      width: 100%;
       display: flex;
       justify-content: center;
+      align-items: center;
       margin: 20px 0;
     }
 
     input[type="file"] {
-      width: 90%;
+      width: 100%;
+      max-width: 300px;
       padding: 12px;
       border-radius: 10px;
       border: none;
@@ -49,6 +52,8 @@
       color: #fff;
       font-size: 1rem;
       text-align: center;
+      display: block;
+      margin: 0 auto;
     }
 
     button {
@@ -69,11 +74,10 @@
       transform: scale(1.05);
     }
 
-    /* Make Thank You bigger */
     #status {
       margin-top: 25px;
       font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;   /* same size as button text */
+      font-size: 1.3rem;
       font-weight: 600;
     }
   </style>
