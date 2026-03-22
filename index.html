@@ -38,7 +38,7 @@ input[type="text"] {
   width:90%;
 }
 input[type="file"] {
-  display:none; /* hide default file chooser */
+  display:none;
 }
 button {
   background:#444;
@@ -56,7 +56,7 @@ button:hover {
   background:#666;
   transform:scale(1.05);
 }
-#status, #guestStatus {
+#status, #guestStatus, #setupLink {
   margin-top:25px;
   font-family:'Playfair Display', serif;
   font-size:1.2rem;
@@ -97,10 +97,9 @@ small {
   border-radius:12px;
   margin-top:10px;
 }
-/* Guest upload button spacing */
 #guestUploadBtn { margin-top:20px; }
-/* Guest preview spacing */
 #guestPreview { margin-bottom:15px; }
+#setupLink { font-size:1rem; color:#ccc; word-break:break-word; margin-top:15px; display:block; }
 </style>
 </head>
 <body>
@@ -123,6 +122,7 @@ small {
     <button id="setupUploadBtn" style="display:none;">Upload Photo</button>
     <div id="preview"></div>
     <div id="status"></div>
+    <div id="setupLink"></div>
   </div>
 
   <!-- Guest Mode -->
@@ -155,6 +155,7 @@ const fileInput = document.getElementById("fileInput");
 const setupUploadBtn = document.getElementById("setupUploadBtn");
 const preview = document.getElementById("preview");
 const status = document.getElementById("status");
+const setupLink = document.getElementById("setupLink");
 
 // Guest Elements
 const guestChooseBtn = document.getElementById("guestChooseBtn");
@@ -163,11 +164,13 @@ const guestUploadBtn = document.getElementById("guestUploadBtn");
 const guestPreview = document.getElementById("guestPreview");
 const guestStatus = document.getElementById("guestStatus");
 
-// Setup Mode Toggle
+// --- Mode Detection ---
 const urlParams = new URLSearchParams(window.location.search);
 const setupMode = urlParams.get('setup') === 'true';
+const guestFolder = urlParams.get('folder'); // for guest uploader
+
 setupDiv.style.display = setupMode ? 'block' : 'none';
-guestDiv.style.display = setupMode ? 'none' : 'block';
+guestDiv.style.display = (setupMode || !guestFolder) ? 'none' : 'block';
 
 // --- Setup Logic ---
 createFolderBtn.addEventListener("click", ()=>{
@@ -176,7 +179,11 @@ createFolderBtn.addEventListener("click", ()=>{
 
   createFolderBtn.disabled=true;
   createFolderBtn.textContent="Creating...";
-  status.textContent=`Folder "${brideId}" created in Google Drive! Please upload your first welcome photo using the cloud.`;
+  status.textContent=`Folder "${brideId}" created in Google Drive! Upload your first welcome photo using the cloud.`;
+
+  // Show guest uploader link for Canva
+  const guestURL = `${window.location.origin}/weddinguploader/?folder=${brideId}`;
+  setupLink.textContent = `Copy this website address and link it to your Photo Button in your Canva Website. This is the link your guests will use to upload photos and videos: ${guestURL}`;
 
   createFolderBtn.disabled=false;
   createFolderBtn.textContent="Create Folder";
@@ -238,55 +245,58 @@ setupUploadBtn.addEventListener("click", ()=>{
 });
 
 // --- Guest Uploader ---
-guestChooseBtn.addEventListener("click", ()=>guestFileInput.click());
-guestFileInput.addEventListener("change", ()=>{
-  const file = guestFileInput.files[0];
-  if(!file){ guestPreview.innerHTML=""; return; }
-  const url = URL.createObjectURL(file);
-  guestPreview.innerHTML = file.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" muted autoplay loop></video>`;
-});
-guestUploadBtn.addEventListener("click", ()=>{
-  const brideId = "guest"; // replace with real folder if needed
-  const file = guestFileInput.files[0];
-  if(!file){ guestStatus.textContent="Please select a file"; return; }
+if(guestFolder){
+  guestDiv.style.display="block";
+  guestChooseBtn.addEventListener("click", ()=>guestFileInput.click());
+  guestFileInput.addEventListener("change", ()=>{
+    const file = guestFileInput.files[0];
+    if(!file){ guestPreview.innerHTML=""; return; }
+    const url = URL.createObjectURL(file);
+    guestPreview.innerHTML = file.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" muted autoplay loop></video>`;
+  });
+  guestUploadBtn.addEventListener("click", ()=>{
+    const brideId = guestFolder; // send to correct folder
+    const file = guestFileInput.files[0];
+    if(!file){ guestStatus.textContent="Please select a file"; return; }
 
-  guestUploadBtn.disabled=true;
-  guestUploadBtn.textContent="Uploading...";
-  guestStatus.textContent="";
+    guestUploadBtn.disabled=true;
+    guestUploadBtn.textContent="Uploading...";
+    guestStatus.textContent="";
 
-  const reader = new FileReader();
-  reader.onload=function(e){
-    const base64 = e.target.result.split(",")[1];
-    fetch(SCRIPT_URL,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify({
-        fileName:file.name,
-        mimeType:file.type,
-        base64File:base64,
-        brideId:brideId
+    const reader = new FileReader();
+    reader.onload=function(e){
+      const base64 = e.target.result.split(",")[1];
+      fetch(SCRIPT_URL,{
+        method:"POST",
+        headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body:JSON.stringify({
+          fileName:file.name,
+          mimeType:file.type,
+          base64File:base64,
+          brideId:brideId
+        })
       })
-    })
-    .then(res=>res.json())
-    .then(data=>{
-      if(data.status==="success"){
-        guestFileInput.value="";
-        guestPreview.innerHTML="";
-        guestStatus.textContent="Thank you! Upload successful.";
-      } else {
-        guestStatus.textContent=`Upload failed: ${data.message}`;
-      }
-    })
-    .catch(err=>{
-      guestStatus.textContent=`Upload failed: ${err}`;
-    })
-    .finally(()=>{
-      guestUploadBtn.disabled=false;
-      guestUploadBtn.textContent="Upload";
-    });
-  };
-  reader.readAsDataURL(file);
-});
+      .then(res=>res.json())
+      .then(data=>{
+        if(data.status==="success"){
+          guestFileInput.value="";
+          guestPreview.innerHTML="";
+          guestStatus.textContent="Thank you! Upload successful.";
+        } else {
+          guestStatus.textContent=`Upload failed: ${data.message}`;
+        }
+      })
+      .catch(err=>{
+        guestStatus.textContent=`Upload failed: ${err}`;
+      })
+      .finally(()=>{
+        guestUploadBtn.disabled=false;
+        guestUploadBtn.textContent="Upload";
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+}
 </script>
 
 </body>
