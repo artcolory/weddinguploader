@@ -18,6 +18,16 @@
     .cloud-upload { width:110px; height:110px; border-radius:50%; background:#555; display:flex; justify-content:center; align-items:center; cursor:pointer; margin:0 auto; transition:0.3s; border:2px solid #888; }
     .cloud-upload:hover { background:#666; transform:scale(1.05); }
     .hidden { display:none; }
+    /* Updated input styling */
+    #brideId {
+      color:#888; 
+      background:#111; 
+      width:100%; 
+      padding:10px; 
+      border-radius:8px; 
+      border:2px solid #555; 
+      box-sizing:border-box;
+    }
   </style>
 </head>
 <body>
@@ -26,7 +36,7 @@
   <h1>Wedding Photo & Video Uploader</h1>
 
   <!-- Step 1: Create Folder -->
-  <input type="text" id="brideId" placeholder="Enter your names and wedding date (e.g., AliceAndBob_042026)" style="color:#888;" />
+  <input type="text" id="brideId" placeholder="Enter a unique name (e.g., AliceAndBob_042026)" />
   <small>Use your first names and wedding date to create a unique folder for your photos/videos.</small>
   <button id="createFolderBtn">Create Folder</button>
 
@@ -68,14 +78,13 @@ const guestUrl = document.getElementById("guestUrl");
 createFolderBtn.addEventListener("click", () => {
   const brideId = brideInput.value.trim();
   if (!brideId) {
-    status.textContent = "Please enter a unique folder name, example your names and wedding date";
+    status.textContent = "Please enter your names and wedding date";
     return;
   }
 
   createFolderBtn.disabled = true;
   createFolderBtn.textContent = "Creating Folder...";
 
-  // Call Google Script to create folder with a small placeholder file
   const placeholder = btoa("Folder placeholder"); // base64 encode
   fetch(SCRIPT_URL, {
     method: "POST",
@@ -90,7 +99,7 @@ createFolderBtn.addEventListener("click", () => {
   .then(res => res.json())
   .then(data => {
     if (data.status === "success") {
-      status.textContent = `Folder "${brideId}" created in Google Drive! Now upload your first welcome photo the cloud.`;
+      status.textContent = `Folder "${brideId}" created in Google Drive! Now upload your first welcome photo.`;
       uploadDiv.classList.remove("hidden");
       fileInput.classList.add("hidden");
       uploadBtn.classList.add("hidden");
@@ -108,9 +117,7 @@ createFolderBtn.addEventListener("click", () => {
 });
 
 // Step 2: Select file
-chooseBtn.addEventListener("click", () => {
-  fileInput.click();
-});
+chooseBtn.addEventListener("click", () => fileInput.click());
 
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
@@ -149,7 +156,7 @@ uploadBtn.addEventListener("click", () => {
         fileInput.value = "";
         preview.innerHTML = "";
         uploadBtn.classList.add("hidden");
-        status.textContent = `Congratulations! You have uploaded your photo! In Google Drive, search for your folder name and view your first photo!`;
+        status.textContent = `Congratulations! You have uploaded your photo! In Google Drive, search for your unique folder name and view your first photo!`;
 
         // Show guest link
         guestLink.classList.remove("hidden");
