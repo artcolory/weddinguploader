@@ -6,11 +6,27 @@
 <title>Wedding Photo & Video Uploader</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
 <style>
-body { font-family:'Raleway',sans-serif; background:#000; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
-.container { text-align:center; max-width:480px; width:90%; padding:40px 30px; }
-h1 { font-family:'Playfair Display', serif; font-size:2rem; margin-bottom:25px; }
-
-/* Bride ID input (setup only) */
+body {
+  font-family:'Raleway',sans-serif;
+  background:#000;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+.container {
+  text-align:center;
+  max-width:480px;
+  width:90%;
+  padding:40px 30px;
+}
+h1 {
+  font-family:'Playfair Display', serif;
+  font-size:2rem;
+  margin-bottom:25px;
+}
 input[type="text"] {
   font-size:1rem;
   margin:10px 0;
@@ -21,15 +37,62 @@ input[type="text"] {
   color:#bbb;
   width:90%;
 }
-
 button {
-  background:#444; color:#fff; border:2px solid #fff; padding:14px 32px; border-radius:12px;
-  font-size:1.1rem; font-weight:600; cursor:pointer; transition:0.3s; margin-top:20px;
+  background:#444;
+  color:#fff;
+  border:2px solid #fff;
+  padding:14px 32px;
+  border-radius:12px;
+  font-size:1.1rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
+  margin-top:20px;
 }
-button:hover { background:#666; transform:scale(1.05); }
-
-#status { margin-top:25px; font-family:'Playfair Display', serif; font-size:1.3rem; font-weight:600; }
-small { display:block; margin-bottom:10px; color:#ccc; font-size:0.9rem; }
+button:hover {
+  background:#666;
+  transform:scale(1.05);
+}
+#status {
+  margin-top:25px;
+  font-family:'Playfair Display', serif;
+  font-size:1.3rem;
+  font-weight:600;
+}
+small {
+  display:block;
+  margin-bottom:10px;
+  color:#ccc;
+  font-size:0.9rem;
+}
+/* Cloud upload icon */
+.cloud-upload {
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  background:#1a1a1a;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  cursor:pointer;
+  margin:20px auto 0 auto;
+  border:2px solid #555;
+  transition:0.3s;
+}
+.cloud-upload:hover {
+  background:#2a2a2a;
+  transform:scale(1.05);
+}
+.cloud-upload svg {
+  width:55px;
+  height:55px;
+  fill:#bbb;
+}
+#preview img, #preview video {
+  max-width:200px;
+  border-radius:12px;
+  margin-top:10px;
+}
 </style>
 </head>
 <body>
@@ -37,26 +100,36 @@ small { display:block; margin-bottom:10px; color:#ccc; font-size:0.9rem; }
 <div class="container">
   <h1>Wedding Photo & Video Uploader</h1>
 
-  <!-- Setup mode elements -->
+  <!-- Setup mode -->
   <div id="setupDiv">
     <input type="text" id="brideId" placeholder="Enter your names and wedding date (e.g., sophiaben04122026)">
     <small>Use your first names and wedding date to create a unique folder for your photos/videos.</small>
     <button id="createFolderBtn">Create Folder</button>
-  </div>
 
-  <!-- Guest mode elements -->
-  <div id="guestDiv">
+    <!-- Step 2: First photo upload -->
     <div class="cloud-upload" id="chooseBtn">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <path d="M19 18H6a4 4 0 010-8 5.5 5.5 0 0110.9-1A4.5 4.5 0 0119 18zm-7-9l-4 4h3v4h2v-4h3l-4-4z"/>
       </svg>
     </div>
     <input type="file" id="fileInput" accept="image/*,video/*">
-    <button id="uploadBtn">Upload</button>
     <div id="preview"></div>
+    <div id="status"></div>
   </div>
 
-  <div id="status"></div>
+  <!-- Guest mode -->
+  <div id="guestDiv">
+    <div class="cloud-upload" id="guestChooseBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M19 18H6a4 4 0 010-8 5.5 5.5 0 0110.9-1A4.5 4.5 0 0119 18zm-7-9l-4 4h3v4h2v-4h3l-4-4z"/>
+      </svg>
+    </div>
+    <input type="file" id="guestFileInput" accept="image/*,video/*" style="display:none;">
+    <div id="guestPreview"></div>
+    <button id="guestUploadBtn">Upload</button>
+    <div id="guestStatus"></div>
+  </div>
+
 </div>
 
 <script>
@@ -64,62 +137,81 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby22tI-7iO5Qb78tegrB
 
 const setupDiv = document.getElementById("setupDiv");
 const guestDiv = document.getElementById("guestDiv");
+
 const brideInput = document.getElementById("brideId");
 const createFolderBtn = document.getElementById("createFolderBtn");
-
 const chooseBtn = document.getElementById("chooseBtn");
 const fileInput = document.getElementById("fileInput");
-const uploadBtn = document.getElementById("uploadBtn");
 const preview = document.getElementById("preview");
 const status = document.getElementById("status");
 
-// Determine setup mode from URL param
+const guestChooseBtn = document.getElementById("guestChooseBtn");
+const guestFileInput = document.getElementById("guestFileInput");
+const guestUploadBtn = document.getElementById("guestUploadBtn");
+const guestPreview = document.getElementById("guestPreview");
+const guestStatus = document.getElementById("guestStatus");
+
+// Check if setup mode
 const urlParams = new URLSearchParams(window.location.search);
 const setupMode = urlParams.get('setup') === 'true';
 
-// Show/hide sections
 setupDiv.style.display = setupMode ? 'block' : 'none';
 guestDiv.style.display = setupMode ? 'none' : 'block';
 
-// --- Setup Mode: Create Folder ---
+// --- Setup mode logic ---
 createFolderBtn.addEventListener("click", ()=>{
   const brideId = brideInput.value.trim();
   if(!brideId){ status.textContent="Please enter your names and wedding date"; return; }
 
-  createFolderBtn.disabled=true;
-  createFolderBtn.textContent="Creating...";
+  createFolderBtn.disabled = true;
+  createFolderBtn.textContent = "Creating...";
 
-  // Dummy file to create folder
-  fetch(SCRIPT_URL,{
-    method:"POST",
-    headers:{"Content-Type":"text/plain;charset=utf-8"},
-    body: JSON.stringify({
-      fileName:"setup.txt",
-      mimeType:"text/plain",
-      base64File:btoa("Setup folder created"),
-      brideId:brideId
+  // If file selected, upload first photo at the same time
+  const file = fileInput.files[0];
+  if(!file){
+    status.textContent = "Folder created! Now upload your first welcome photo using the cloud below.";
+    createFolderBtn.disabled = false;
+    createFolderBtn.textContent = "Create Folder";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const base64 = e.target.result.split(",")[1];
+
+    fetch(SCRIPT_URL,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({
+        fileName: file.name,
+        mimeType: file.type,
+        base64File: base64,
+        brideId: brideId
+      })
     })
-  })
-  .then(res=>res.json())
-  .then(data=>{
-    if(data.status==="success"){
-      status.textContent = `Folder "${brideId}" created! This is your own Google Drive Folder where all your uploaded photos and videos will appear.`;
-    } else {
-      status.textContent = `Failed to create folder: ${data.message}`;
-    }
-  })
-  .catch(err=>{
-    status.textContent = `Failed: ${err}`;
-  })
-  .finally(()=>{
-    createFolderBtn.disabled=false;
-    createFolderBtn.textContent="Create Folder";
-  });
+    .then(res=>res.json())
+    .then(data=>{
+      if(data.status==="success"){
+        status.textContent = `Congratulations! Folder "${brideId}" created! This is your own Google Drive Folder where all your uploaded photos and videos will appear. First photo uploaded!`;
+        preview.innerHTML = file.type.startsWith("image/") ? `<img src="${URL.createObjectURL(file)}">` : `<video src="${URL.createObjectURL(file)}" muted autoplay loop></video>`;
+        fileInput.value = "";
+      } else {
+        status.textContent = `Failed: ${data.message}`;
+      }
+    })
+    .catch(err=>{
+      status.textContent = `Failed: ${err}`;
+    })
+    .finally(()=>{
+      createFolderBtn.disabled = false;
+      createFolderBtn.textContent = "Create Folder";
+    });
+  };
+  if(file) reader.readAsDataURL(file);
 });
 
-// --- Guest Mode: Upload ---
+// --- Setup cloud click ---
 chooseBtn.addEventListener("click", ()=>fileInput.click());
-
 fileInput.addEventListener("change", ()=>{
   const file = fileInput.files[0];
   if(!file){ preview.innerHTML=""; return; }
@@ -127,18 +219,26 @@ fileInput.addEventListener("change", ()=>{
   preview.innerHTML = file.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" muted autoplay loop></video>`;
 });
 
-uploadBtn.addEventListener("click", ()=>{
-  const brideId = "guest"; // guests will have generic folder or pre-set folder
-  const file = fileInput.files[0];
-  if(!file){ status.textContent="Please select a file"; return; }
+// --- Guest uploader ---
+guestChooseBtn.addEventListener("click", ()=>guestFileInput.click());
+guestFileInput.addEventListener("change", ()=>{
+  const file = guestFileInput.files[0];
+  if(!file){ guestPreview.innerHTML=""; return; }
+  const url = URL.createObjectURL(file);
+  guestPreview.innerHTML = file.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" muted autoplay loop></video>`;
+});
 
-  uploadBtn.disabled=true;
-  uploadBtn.textContent="Uploading...";
+guestUploadBtn.addEventListener("click", ()=>{
+  const brideId = "guest"; // set your logic for guest folder here if needed
+  const file = guestFileInput.files[0];
+  if(!file){ guestStatus.textContent="Please select a file"; return; }
+
+  guestUploadBtn.disabled = true;
+  guestUploadBtn.textContent="Uploading...";
 
   const reader = new FileReader();
   reader.onload=function(e){
     const base64 = e.target.result.split(",")[1];
-
     fetch(SCRIPT_URL,{
       method:"POST",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -152,19 +252,19 @@ uploadBtn.addEventListener("click", ()=>{
     .then(res=>res.json())
     .then(data=>{
       if(data.status==="success"){
-        fileInput.value="";
-        preview.innerHTML="";
-        status.textContent="Thank you! Upload successful.";
+        guestFileInput.value="";
+        guestPreview.innerHTML="";
+        guestStatus.textContent="Thank you! Upload successful.";
       } else {
-        status.textContent=`Upload failed: ${data.message}`;
+        guestStatus.textContent=`Upload failed: ${data.message}`;
       }
     })
     .catch(err=>{
-      status.textContent=`Upload failed: ${err}`;
+      guestStatus.textContent=`Upload failed: ${err}`;
     })
     .finally(()=>{
-      uploadBtn.disabled=false;
-      uploadBtn.textContent="Upload";
+      guestUploadBtn.disabled=false;
+      guestUploadBtn.textContent="Upload";
     });
   };
   reader.readAsDataURL(file);
