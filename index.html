@@ -33,16 +33,15 @@
       margin-bottom: 25px;
     }
 
-    /* Hide default file input */
     #fileInput {
       display: none;
     }
 
-    /* Circular cloud upload button */
+    /* CIRCULAR cloud upload */
     .cloud-upload {
       width: 110px;
       height: 110px;
-      border-radius: 50%; /* <-- changed to circle */
+      border-radius: 50%;
       background: #1a1a1a;
       display: flex;
       justify-content: center;
@@ -58,7 +57,6 @@
       transform: scale(1.05);
     }
 
-    /* Cloud icon SVG styling */
     .cloud-upload svg {
       width: 55px;
       height: 55px;
@@ -70,6 +68,16 @@
       font-size: 0.95rem;
       color: #ccc;
       font-style: italic;
+    }
+
+    /* Preview box */
+    #preview {
+      margin-top: 15px;
+    }
+    #preview img, #preview video {
+      max-width: 200px;
+      border-radius: 12px;
+      margin-top: 10px;
     }
 
     button {
@@ -104,10 +112,8 @@
 
     <h1>Upload Your Photo or Video</h1>
 
-    <!-- Hidden Input -->
     <input type="file" id="fileInput" accept="image/*,video/*">
 
-    <!-- Cloud upload button -->
     <div class="cloud-upload" id="chooseBtn">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <path d="M19 18H6a4 4 0 010-8 5.5 5.5 0 0110.9-1A4.5 4.5 0 0119 18zm-7-9l-4 4h3v4h2v-4h3l-4-4z"/>
@@ -115,6 +121,9 @@
     </div>
 
     <div id="selectedFileName"></div>
+
+    <!-- PREVIEW AREA -->
+    <div id="preview"></div>
 
     <button id="uploadBtn">Upload</button>
 
@@ -128,15 +137,31 @@
     const chooseBtn = document.getElementById("chooseBtn");
     const fileInput = document.getElementById("fileInput");
     const selectedFileName = document.getElementById("selectedFileName");
+    const preview = document.getElementById("preview");
     const uploadBtn = document.getElementById("uploadBtn");
     const status = document.getElementById("status");
 
     chooseBtn.addEventListener("click", () => fileInput.click());
 
     fileInput.addEventListener("change", () => {
-      selectedFileName.textContent = fileInput.files.length
-        ? fileInput.files[0].name
-        : "";
+      const file = fileInput.files[0];
+
+      if (!file) {
+        selectedFileName.textContent = "";
+        preview.innerHTML = "";
+        return;
+      }
+
+      selectedFileName.textContent = file.name;
+
+      const url = URL.createObjectURL(file);
+
+      if (file.type.startsWith("image/")) {
+        preview.innerHTML = `<img src="${url}">`;
+      } 
+      else if (file.type.startsWith("video/")) {
+        preview.innerHTML = `<video src="${url}" muted autoplay loop></video>`;
+      }
     });
 
     uploadBtn.addEventListener("click", () => {
@@ -167,6 +192,7 @@
           if (data.status === "success") {
             fileInput.value = "";
             selectedFileName.textContent = "";
+            preview.innerHTML = "";
             status.textContent = "Thank you!";
           } else {
             status.textContent = `Upload failed: ${data.message}`;
