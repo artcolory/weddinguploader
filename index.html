@@ -1,154 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body {
+    font-family: 'Raleway', sans-serif;
+    background-color: #000;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
 
-  <title>Wedding Upload</title>
+  .container {
+    text-align: center;
+    max-width: 480px;
+    width: 90%;
+    padding: 40px 30px;
+  }
 
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    margin-bottom: 25px;
+  }
 
-  <style>
-    body {
-      font-family: 'Raleway', sans-serif;
-      background-color: #000;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
+  /* Hide real file input */
+  #fileInput {
+    display: none;
+  }
 
-    .container {
-      text-align: center;
-      max-width: 480px;
-      width: 90%;
-      padding: 40px 30px;
-    }
+  /* Custom centered button */
+  .custom-file-btn {
+    background: #111;
+    color: #fff;
+    border: 2px solid #fff;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-block;
+    margin: 20px auto;
+    transition: 0.3s;
+  }
 
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      margin-bottom: 25px;
-    }
+  .custom-file-btn:hover {
+    background: #222;
+    transform: scale(1.05);
+  }
 
-    /* Center the file input */
-    .file-wrapper {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 20px 0;
-    }
+  #selectedFileName {
+    margin-top: 10px;
+    font-size: 0.95rem;
+    color: #ccc;
+    font-style: italic;
+  }
 
-    input[type="file"] {
-      width: 100%;
-      max-width: 300px;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      background: #111;
-      color: #fff;
-      font-size: 1rem;
-      text-align: center;
-      display: block;
-      margin: 0 auto;
-    }
+  button {
+    background: #444;
+    color: #fff;
+    border: 2px solid #fff;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 15px;
+  }
 
-    button {
-      background: #444;
-      color: #fff;
-      border: 2px solid #fff;
-      padding: 14px 32px;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.3s;
-      margin-top: 10px;
-    }
+  button:hover {
+    background: #666;
+    transform: scale(1.05);
+  }
 
-    button:hover {
-      background: #666;
-      transform: scale(1.05);
-    }
-
-    #status {
-      margin-top: 25px;
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;
-      font-weight: 600;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    
-    <h1>Upload Your Photo or Video</h1>
-
-    <div class="file-wrapper">
-      <input type="file" id="fileInput" accept="image/*,video/*">
-    </div>
-
-    <button id="uploadBtn">Upload</button>
-
-    <div id="status"></div>
-
-  </div>
-
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqUTY6km0cG5YmRewPe4XMe6gcMTprwVnx6UwEy695wsG_baG7-y98XR-e1M_VZKOf/exec";
-
-    const fileInput = document.getElementById("fileInput");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const status = document.getElementById("status");
-
-    uploadBtn.addEventListener("click", () => {
-      const file = fileInput.files[0];
-      if (!file) {
-        status.textContent = "Please select a file.";
-        return;
-      }
-
-      uploadBtn.disabled = true;
-      uploadBtn.textContent = "Uploading...";
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const base64 = e.target.result.split(",")[1];
-
-        fetch(SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            fileName: file.name,
-            mimeType: file.type,
-            base64File: base64
-          })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "success") {
-            fileInput.value = "";
-            status.textContent = "Thank you!";
-          } else {
-            status.textContent = `Upload failed: ${data.message}`;
-          }
-        })
-        .catch(err => {
-          status.textContent = `Upload failed: ${err}`;
-        })
-        .finally(() => {
-          uploadBtn.disabled = false;
-          uploadBtn.textContent = "Upload";
-        });
-      };
-
-      reader.readAsDataURL(file);
-    });
-  </script>
-
-</body>
-</html>
+  #status {
+    margin-top: 25px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+</style>
