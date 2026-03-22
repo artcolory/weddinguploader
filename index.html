@@ -56,7 +56,7 @@ button:hover {
   background:#666;
   transform:scale(1.05);
 }
-#status {
+#status, #guestStatus {
   margin-top:25px;
   font-family:'Playfair Display', serif;
   font-size:1.2rem;
@@ -97,6 +97,10 @@ small {
   border-radius:12px;
   margin-top:10px;
 }
+/* Guest upload button spacing */
+#guestUploadBtn { margin-top:20px; }
+/* Guest preview spacing */
+#guestPreview { margin-bottom:15px; }
 </style>
 </head>
 <body>
@@ -172,24 +176,14 @@ createFolderBtn.addEventListener("click", ()=>{
 
   createFolderBtn.disabled=true;
   createFolderBtn.textContent="Creating...";
-  status.textContent="";
-
-  // First file upload only after selection
-  if(fileInput.files[0]){
-    setupUploadBtn.style.display="inline-block";
-  } else {
-    status.textContent = `Folder "${brideId}" created! This is your Google Drive Folder name. Upload your first welcome photo using the cloud.`;
-  }
+  status.textContent=`Folder "${brideId}" created in Google Drive! Please upload your first welcome photo using the cloud.`;
 
   createFolderBtn.disabled=false;
   createFolderBtn.textContent="Create Folder";
 });
 
 // --- Setup cloud click ---
-chooseBtn.addEventListener("click", ()=>{
-  fileInput.click();
-  status.textContent="";
-});
+chooseBtn.addEventListener("click", ()=>{ fileInput.click(); status.textContent=""; });
 fileInput.addEventListener("change", ()=>{
   const file = fileInput.files[0];
   if(!file){ preview.innerHTML=""; setupUploadBtn.style.display="none"; return; }
@@ -226,7 +220,7 @@ setupUploadBtn.addEventListener("click", ()=>{
       if(data.status==="success"){
         fileInput.value="";
         preview.innerHTML = file.type.startsWith("image/") ? `<img src="${URL.createObjectURL(file)}">` : `<video src="${URL.createObjectURL(file)}" muted autoplay loop></video>`;
-        status.textContent="Congratulations! You have uploaded your photo! Head over to Google Drive, find your folder by using your unique folder name to view your first photo!";
+        status.textContent="Congratulations! You have uploaded your photo! Please use your unique Google Drive Folder Name, you should see your first photo!";
         setupUploadBtn.style.display="none";
       } else {
         status.textContent=`Upload failed: ${data.message}`;
@@ -252,7 +246,7 @@ guestFileInput.addEventListener("change", ()=>{
   guestPreview.innerHTML = file.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" muted autoplay loop></video>`;
 });
 guestUploadBtn.addEventListener("click", ()=>{
-  const brideId = "guest"; // or map to real folder
+  const brideId = "guest"; // replace with real folder if needed
   const file = guestFileInput.files[0];
   if(!file){ guestStatus.textContent="Please select a file"; return; }
 
