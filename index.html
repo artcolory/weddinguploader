@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wedding Photo & Video Uploader</title>
+
+<!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- Google Sign-In library -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <style>
 body { font-family:'Raleway',sans-serif; background:#000; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; margin:0; }
 .container { text-align:center; max-width:480px; width:90%; padding:40px 30px; }
@@ -33,12 +39,15 @@ small { display:block; margin-bottom:10px; color:#ccc; font-size:0.9rem; }
 <div class="container">
 <h1>Wedding Photo & Video Uploader</h1>
 
-<!-- Step 1: Create Folder -->
-<input type="text" id="brideId" placeholder="Enter your names and wedding date (e.g., AliceAndBob_042026)" />
-<small>Use your first names and wedding date to create a unique folder for your photos/videos.</small>
-<button id="createFolderBtn">Create Folder</button>
+<!-- Google Sign-In button -->
+<div id="gSignInDiv"></div>
 
-<!-- Step 2: Upload first photo -->
+<!-- Folder creation -->
+<input type="text" id="brideId" placeholder="Enter your names and wedding date (e.g., AliceAndBob_042026)" class="hidden" />
+<small id="folderHint" class="hidden">Use your first names and wedding date to create a unique folder for your photos/videos.</small>
+<button id="createFolderBtn" class="hidden">Create Folder</button>
+
+<!-- Upload first photo/video -->
 <div id="uploadDiv" class="hidden">
   <div class="cloud-upload" id="chooseBtn">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -46,7 +55,7 @@ small { display:block; margin-bottom:10px; color:#ccc; font-size:0.9rem; }
     </svg>
   </div>
   <input type="file" id="fileInput" accept="image/*,video/*" class="hidden">
-  <button id="uploadBtn" class="hidden">Upload Photo</button>
+  <button id="uploadBtn" class="hidden">Upload Photo/Video</button>
   <div id="preview"></div>
 </div>
 
@@ -59,7 +68,31 @@ small { display:block; margin-bottom:10px; color:#ccc; font-size:0.9rem; }
 </div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-JfaA-Ro7VQvst-F2xS5H-DPYvWd2spG0dUYQQMAtcXTGhdMT8mUPZcbrdhvd6SuQvw/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkWXLO6g5iN9pxttoi4c4y91gSNGUZdo7ZhhNSThmCzrkPMZzWSN0YU50GIan5pdm50A/exec";
+
+let googleUser;
+
+function handleCredentialResponse(response) {
+  // This is called when the bride logs in via Google Sign-In
+  googleUser = google.accounts.id.decodeJwtResponse(response.credential);
+  // Show folder input and create button
+  document.getElementById("brideId").classList.remove("hidden");
+  document.getElementById("folderHint").classList.remove("hidden");
+  document.getElementById("createFolderBtn").classList.remove("hidden");
+  document.getElementById("gSignInDiv").classList.add("hidden");
+}
+
+// Initialize Google Sign-In
+window.onload = function() {
+  google.accounts.id.initialize({
+    client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // replace with your OAuth Client ID
+    callback: handleCredentialResponse
+  });
+  google.accounts.id.renderButton(
+    document.getElementById("gSignInDiv"),
+    { theme: "outline", size: "large", text: "continue_with" }
+  );
+};
 
 const brideInput = document.getElementById("brideId");
 const createFolderBtn = document.getElementById("createFolderBtn");
@@ -72,29 +105,32 @@ const status = document.getElementById("status");
 const guestLink = document.getElementById("guestLink");
 const guestUrl = document.getElementById("guestUrl");
 
-// Step 1: Create Folder
+// Step 1: Create folder
 createFolderBtn.addEventListener("click", () => {
   const brideId = brideInput.value.trim();
-  if(!brideId){ status.textContent="Please enter your names and wedding date"; return; }
+  if(!brideId){ status.textContent="Please enter a unique folder name"; return; }
 
   createFolderBtn.disabled = true;
   createFolderBtn.textContent = "Creating Folder...";
 
+  const placeholder = btoa("Folder placeholder"); // initial file to check folder
   fetch(SCRIPT_URL, {
     method:"POST",
     headers:{ "Content-Type":"text/plain;charset=utf-8" },
-    body:JSON.stringify({ brideId: brideId })
+    body:JSON.stringify({
+      brideId: brideId
+    })
   })
-  .then(res => res.json())
-  .then(data => {
-    if(data.status === "success"){
-      status.textContent=`Congratulations! Folder "${brideId}" created! Now upload your first welcome photo using the cloud.`;
+  .then(res=>res.json())
+  .then(data=>{
+    if(data.status==="success"){
+      status.textContent=`Folder "${brideId}" is ready! Upload your first photo/video.`;
       uploadDiv.classList.remove("hidden");
     } else {
       status.textContent=`Error: ${data.message}`;
     }
   })
-  .catch(err => { status.textContent=`Error: ${err}`; })
+  .catch(err=>{ status.textContent=`Error: ${err}`; })
   .finally(()=>{
     createFolderBtn.disabled=false;
     createFolderBtn.textContent="Create Folder";
@@ -104,26 +140,26 @@ createFolderBtn.addEventListener("click", () => {
 // Step 2: Select file
 chooseBtn.addEventListener("click",()=>fileInput.click());
 fileInput.addEventListener("change",()=> {
-  const file = fileInput.files[0];
+  const file=fileInput.files[0];
   if(!file){ preview.innerHTML=""; uploadBtn.classList.add("hidden"); return; }
-  const url = URL.createObjectURL(file);
-  preview.innerHTML = file.type.startsWith("image/") ? `<img src="${url}">` : `<video src="${url}" muted autoplay loop></video>`;
+  const url=URL.createObjectURL(file);
+  preview.innerHTML=file.type.startsWith("image/")? `<img src="${url}">`:`<video src="${url}" muted autoplay loop></video>`;
   uploadBtn.classList.remove("hidden");
 });
 
-// Step 3: Upload first photo
-uploadBtn.addEventListener("click", () => {
+// Step 3: Upload first photo/video
+uploadBtn.addEventListener("click",()=>{
   const brideId = brideInput.value.trim();
   const file = fileInput.files[0];
   if(!file){ status.textContent="Please select a file"; return; }
 
-  uploadBtn.disabled = true;
-  uploadBtn.textContent = "Uploading...";
+  uploadBtn.disabled=true;
+  uploadBtn.textContent="Uploading...";
 
   const reader = new FileReader();
-  reader.onload = function(e){
-    const base64 = e.target.result.split(",")[1];
-    fetch(SCRIPT_URL, {
+  reader.onload=function(e){
+    const base64=e.target.result.split(",")[1];
+    fetch(SCRIPT_URL,{
       method:"POST",
       headers:{ "Content-Type":"text/plain;charset=utf-8" },
       body:JSON.stringify({
@@ -133,25 +169,28 @@ uploadBtn.addEventListener("click", () => {
         base64File: base64
       })
     })
-    .then(res => res.json())
-    .then(data => {
-      if(data.status === "success"){
+    .then(res=>res.json())
+    .then(data=>{
+      if(data.status==="success"){
         fileInput.value="";
         preview.innerHTML="";
         uploadBtn.classList.add("hidden");
-        status.textContent=`Congratulations! You have uploaded your photo! In Google Drive, search for your folder name and view your first photo!`;
+        status.textContent=`Congratulations! You have uploaded your first photo/video!`;
         guestLink.classList.remove("hidden");
         guestUrl.textContent=`https://artcolory.github.io/weddinguploader/guest.html?folder=${brideId}`;
-      } else { status.textContent=`Upload failed: ${data.message}`; }
+      } else {
+        status.textContent=`Upload failed: ${data.message}`;
+      }
     })
-    .catch(err => { status.textContent=`Upload failed: ${err}`; })
+    .catch(err=>{ status.textContent=`Upload failed: ${err}`; })
     .finally(()=>{
       uploadBtn.disabled=false;
-      uploadBtn.textContent="Upload Photo";
+      uploadBtn.textContent="Upload Photo/Video";
     });
   };
   reader.readAsDataURL(file);
 });
 </script>
+
 </body>
 </html>
