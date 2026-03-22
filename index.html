@@ -67,9 +67,18 @@
     }
 
     #status {
-      margin-top: 15px;
+      margin-top: 10px;
       font-size: 1rem;
       font-weight: 400;
+    }
+
+    #preview {
+      margin-top: 15px;
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      display: none;
+      object-fit: cover;
     }
   </style>
 </head>
@@ -80,6 +89,10 @@
     <input type="file" id="fileInput" accept="image/*,video/*">
     <button id="uploadBtn">Upload</button>
     <div id="status"></div>
+    <div>
+      <img id="preview" alt="Preview">
+      <video id="previewVideo" controls style="max-width:100%; max-height:200px; display:none;"></video>
+    </div>
   </div>
 
   <script>
@@ -88,6 +101,28 @@
     const fileInput = document.getElementById("fileInput");
     const uploadBtn = document.getElementById("uploadBtn");
     const status = document.getElementById("status");
+    const previewImg = document.getElementById("preview");
+    const previewVideo = document.getElementById("previewVideo");
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        previewImg.style.display = "none";
+        previewVideo.style.display = "none";
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      if (file.type.startsWith("image/")) {
+        previewImg.src = url;
+        previewImg.style.display = "block";
+        previewVideo.style.display = "none";
+      } else if (file.type.startsWith("video/")) {
+        previewVideo.src = url;
+        previewVideo.style.display = "block";
+        previewImg.style.display = "none";
+      }
+    });
 
     uploadBtn.addEventListener("click", () => {
       const file = fileInput.files[0];
@@ -118,6 +153,8 @@
           if (data.status === "success") {
             fileInput.value = "";
             status.textContent = "Thank you!";
+            previewImg.style.display = "none";
+            previewVideo.style.display = "none";
           } else {
             status.textContent = `Upload failed: ${data.message}`;
           }
